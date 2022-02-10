@@ -1,6 +1,8 @@
 using APIRegioes.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+var isDevelopment = builder.Environment.IsDevelopment();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -8,17 +10,30 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<RegioesRepository>();
 
-builder.Services.AddMiniProfiler(options =>
-    options.RouteBasePath = "/profiler");
+builder.Services.AddDbContext<RegioesContext>(options =>
+{
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("BaseDadosGeograficos"));
+    if (isDevelopment)
+        options.EnableSensitiveDataLogging();
+});
+
+if (isDevelopment)
+    builder.Services.AddMiniProfiler(options =>
+        options.RouteBasePath = "/profiler").AddEntityFramework();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (isDevelopment)
 {
+    var logger = app.Logger;
+    logger.LogInformation("Ativando o middleware do MiniProfiler...");
+    
     // Rotas possíveis com a configuração do MiniProfiler:
-    // /profiler/results -- Última operação
-    // /profiler/results-index -- Listagem de todas as operações
-    // /profiler/results?id={Guid Profiler}
+    logger.LogInformation("MiniProfiler - Última operação: /profiler/results");
+    logger.LogInformation("MiniProfiler - Listagem de todas as operações: /profiler/results-index");
+    logger.LogInformation("MiniProfiler - Operação específica: /profiler/results?id=<Guid Profiler>");
+
     app.UseMiniProfiler();
 }
 

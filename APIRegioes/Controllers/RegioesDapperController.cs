@@ -6,12 +6,12 @@ namespace APIRegioes.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class RegioesController : ControllerBase
+public class RegioesDapperController : ControllerBase
 {
-    private readonly ILogger<RegioesController> _logger;
+    private readonly ILogger<RegioesDapperController> _logger;
     private readonly RegioesRepository _repository;
 
-    public RegioesController(ILogger<RegioesController> logger,
+    public RegioesDapperController(ILogger<RegioesDapperController> logger,
         RegioesRepository repository)
     {
         _logger = logger;

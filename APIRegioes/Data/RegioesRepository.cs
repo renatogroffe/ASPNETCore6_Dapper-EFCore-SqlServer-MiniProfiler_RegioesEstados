@@ -61,4 +61,29 @@ public class RegioesRepository
         return (AutoMapper.MapDynamic<Regiao>(dados)
             as IEnumerable<Regiao>).ToArray();
     }
+
+    public IEnumerable<Regiao> GetV2(string? codRegiao = null)
+    {
+        var conexao = GetConnection();
+
+        bool queryWithParameter = !String.IsNullOrWhiteSpace(codRegiao);
+        var sqlCmd =
+            "SELECT * " +
+            "FROM dbo.Regioes " +
+            (queryWithParameter ? $"WHERE (CodRegiao = @CodigoRegiao) " : String.Empty) +
+            "ORDER BY NomeRegiao";
+
+        object? paramQuery = null;
+        if (queryWithParameter)
+            paramQuery = new { CodigoRegiao = codRegiao };
+        var dados = conexao.Query<Regiao>(sqlCmd, paramQuery);
+
+        foreach (var regiao in dados)
+            regiao.Estados = conexao.Query<Estado>(
+                "SELECT * FROM dbo.Estados " +
+                "WHERE IdRegiao = @IdRegiao",
+                new { IdRegiao = regiao.IdRegiao }).ToList();
+
+        return dados;
+    }
 }
